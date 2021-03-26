@@ -1,6 +1,6 @@
 ﻿using Bluscream;
 using System;
-// using System.Linq;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace RemoveFileExtension
@@ -16,29 +16,25 @@ namespace RemoveFileExtension
             IntPtr handle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
             ShowWindow(handle, 6);
             // _args = new string[] { "self", @"S:\Steam\steamapps\common\VRChat\Mods\LuaLoader.dll.disabled" };
-            // var args = _args.ToList();
+            var args = _args.ToList();
+            args.Remove(System.Reflection.Assembly.GetExecutingAssembly().Location);
             // args.RemoveAt(0);
-            var errors = new System.Text.StringBuilder(string.Join(Environment.NewLine, _args));
-            foreach (var arg in _args)
+            var msg = new System.Text.StringBuilder();
+            foreach (var arg in args)
             {
-                try
-                {
-                    if (arg == System.Reflection.Assembly.GetExecutingAssembly().Location) continue;
-                    var file = new System.IO.FileInfo(arg);
-                    var newName = file.FileNameWithoutExtension();
-                    errors.AppendFormat("{0} - > {1}: ", file.Name.Quote(), newName.Quote());
+                var file = new System.IO.FileInfo(arg);
+                var newName = file.FileNameWithoutExtension();
+                try {
                     file.Rename(newName);
-                    errors.Append("Success");
                 } catch (Exception ex)
                 {
-                    errors.Append(ex.Message);
+                    msg.AppendFormat("{0} - > {1}: {2}", file.Name.Quote(), newName.Quote(), ex.Message).AppendLine();
                 }
-                errors.AppendLine();
             }
-            if (errors.Length > 0)
+            if (msg.Length > 0)
             {
                 ShowWindow(handle, 9);
-                Console.WriteLine(errors.ToString());
+                Console.WriteLine(msg.ToString());
                 Console.ReadLine();
             }
         }
